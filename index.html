@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Painel - PRT Soluções</title>
+
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      font-family: Arial;
+      background: #f4f6fb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .box {
+      background: white;
+      padding: 30px;
+      width: 350px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    /* REMOVE AS SETINHAS DO INPUT NUMBER */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      background: #2f5be7;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 6px;
+    }
+
+    button:hover {
+      background: #1d44c7;
+    }
+
+    #resultado {
+      margin-top: 20px;
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .sucesso {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .erro {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .loading {
+      background: #fff3cd;
+      color: #856404;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>Enviar Email</h2>
+
+  <input 
+    type="number" 
+    id="numero" 
+    placeholder="Digite o número do Ticket"
+    onkeypress="if(event.key === 'Enter') enviar()"
+  >
+
+  <button onclick="enviar()">Enviar</button>
+
+  <div id="resultado"></div>
+</div>
+
+<script>
+function enviar() {
+  var numero = document.getElementById("numero").value;
+  var resultado = document.getElementById("resultado");
+
+  if (!numero) {
+    resultado.style.display = "block";
+    resultado.className = "erro";
+    resultado.innerText = "Digite um número.";
+    return;
+  }
+
+  resultado.style.display = "block";
+  resultado.className = "loading";
+  resultado.innerText = "Enviando email...";
+
+  fetch("https://prtsolucoes.app.n8n.cloud/webhook/consulta", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ numero: numero })
+  })
+  .then(async response => {
+    let text = await response.text();
+
+    try {
+      let data = JSON.parse(text);
+
+      if (Array.isArray(data)) data = data[0];
+
+      if (data.status === "sucesso") {
+        resultado.className = "sucesso";
+        resultado.innerText = data.mensagem;
+      } 
+      else if (data.success === true) {
+        resultado.className = "sucesso";
+        resultado.innerText = "Email enviado com sucesso!";
+      } 
+      else if (data.resultado) {
+        resultado.className = "sucesso";
+        resultado.innerText = data.resultado;
+      } 
+      else {
+        resultado.className = "erro";
+        resultado.innerText = "Erro ao processar resposta.";
+      }
+
+    } catch {
+      resultado.className = "sucesso";
+      resultado.innerText = text;
+    }
+  })
+  .catch(error => {
+    console.error(error);
+    resultado.className = "erro";
+    resultado.innerText = "Erro de conexão com o servidor.";
+  });
+}
+</script>
+
+</body>
+</html>
