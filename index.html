@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Painel - PRT Soluções</title>
+  <title>Painel - PRT Soluções (Campo)</title>
 
   <style>
     html, body {
@@ -124,7 +124,7 @@ function enviar() {
   resultado.className = "loading";
   resultado.innerText = "Enviando email...";
 
-  fetch("https://prtsolucoes.app.n8n.cloud/webhook/consulta", {
+  fetch("https://prtsolucoes.app.n8n.cloud/webhook/consulta-campo", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
